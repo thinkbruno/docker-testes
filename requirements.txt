@@ -1,9 +1,1 @@
-gunicorn
-gevent
-flask_cors
-flask_script
-peewee
-pymysql
-requests
-cython
-python-dotenv
+flask

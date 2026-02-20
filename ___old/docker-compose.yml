@@ -1,0 +1,27 @@
+version: "3"
+services:
+  docker-testes-container:
+    build: .
+    container_name: docker-testes-container
+    image: docker-testes
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - '5000:5000'
+    env_file: .env
+    command: gunicorn --reload -b 0.0.0.0:5000 -k gevent --log-file - --log-level debug --access-logfile - manage:app --timeout 300
+
+  docker-testes-mysql:
+    container_name: docker-testes-mysql
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "12345"
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: "bd-testes"
+      MYSQL_TCP_PORT: 3307
+    ports:
+      - 3307:3307
+    expose:
+      - 3307
+    cap_add:
+      - SYS_NICE
