@@ -31,5 +31,13 @@ services:
     volumes:
       - .:/app
 
+  frontend:
+    build: ./frontend
+    container_name: vue_frontend
+    depends_on:
+      - app
+    ports:
+      - "8080:80"
+
 volumes:
   mysql_data:

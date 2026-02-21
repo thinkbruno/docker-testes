@@ -90,3 +90,18 @@ htmlcov/
 # =========================
 *.swp
 *.bak
+
+# ========================
+# FRONTEND (Vue / Vite)
+# ========================
+
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
+frontend/.env.*
+frontend/.DS_Store
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
