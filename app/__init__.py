@@ -1,17 +1,15 @@
-from flask import Flask, render_template
-from .config import Config
+from flask import Flask
+from app.config import Config
+from app.database import engine, Base
+from app.routes.user_routes import user_bp
 
 
 def create_app():
-    app = Flask(__name__, template_folder="templates", static_folder="static")
+    app = Flask(__name__)
     app.config.from_object(Config)
 
-    from .routes.user import user_bp
+    Base.metadata.create_all(bind=engine)
 
     app.register_blueprint(user_bp)
-
-    @app.route("/")
-    def home():
-        return render_template("index.html")
 
     return app

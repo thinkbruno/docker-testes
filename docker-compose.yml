@@ -1,10 +1,35 @@
 services:
+  db:
+    image: mysql:8
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: bd_testes
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   app:
     build: .
-    container_name: flask_test_app
+    container_name: flask_app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_HOST: db
+      MYSQL_DATABASE: bd_testes
     ports:
       - "5000:5000"
     volumes:
       - .:/app
-    environment:
-      - DEBUG=True
+
+volumes:
+  mysql_data:
