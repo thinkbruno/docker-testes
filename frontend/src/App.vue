@@ -1,27 +1,45 @@
 <template>
+  <div v-if="toast.show" :class="['toast', toast.type]">
+    {{ toast.message }}
+  </div>
   <div class="container">
-    <h1>User Management</h1>
+    <div class="card">
+      <h1>Teste - CRUD de Usuários</h1>
 
-    <form @submit.prevent="saveUser">
-      <input v-model="form.name" placeholder="Name" required />
-      <input v-model="form.email" placeholder="Email" required />
-      <input v-model="form.password" placeholder="Password" required />
+      <div class="form">
+        <div class="form-row">
+          <input v-model="form.name" placeholder="Nome" />
+          <input v-model="form.email" placeholder="Email" />
+          <input v-model="form.password" type="password" placeholder="Password" />
+        </div>
 
-      <button type="submit">
-        {{ form.id ? "Update" : "Create" }}
-      </button>
-    </form>
+        <div class="form-actions">
+          <button class="btn-primary" @click="saveUser" :disabled="loading">
+            {{ loading ? "Salvando..." : form.id ? "Editar" : "Salvar" }}
+          </button>
+        </div>
+      </div>
+      <div v-if="loading" class="loading">
+        Carregando...
+      </div>
+      <ul v-if="!loading" class="user-list">
+        <li v-for="user in users" :key="user.id" class="user-item">
+          <div>
+            <strong>{{ user.name }}</strong>
+            <div style="font-size: 0.9rem; opacity: 0.7">
+              {{ user.email }}
+            </div>
+          </div>
 
-    <hr />
-
-    <ul>
-      <li v-for="user in users" :key="user.id">
-        {{ user.name }} - {{ user.email }}
-
-        <button @click="editUser(user)">Edit</button>
-        <button @click="deleteUser(user.id)">Delete</button>
-      </li>
-    </ul>
+          <div class="user-actions">
+            <button @click="editUser(user)">Editar</button>
+            <button class="btn-danger" @click="deleteUser(user.id)">
+              Apagar
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -32,6 +50,13 @@ export default {
   data() {
     return {
       users: [],
+      loading: false,
+      saving: false,
+      toast: {
+        show: false,
+        message: "",
+        type: "success", // success | error
+      },
       form: {
         id: null,
         name: "",
@@ -46,29 +71,71 @@ export default {
   },
 
   methods: {
+    showToast(message, type = "success") {
+      this.toast = { show: true, message, type };
+      setTimeout(() => {
+        this.toast.show = false;
+      }, 3000);
+    },
+
     async loadUsers() {
-      const { data } = await api.get("/users");
-      this.users = data;
+      this.loading = true;
+      try {
+        const response = await api.get("/users/");
+        this.users = response.data || [];
+      } catch (error) {
+        this.showToast("Erro ao carregar usuários", "error");
+      } finally {
+        this.loading = false;
+      }
     },
 
     async saveUser() {
-      if (this.form.id) {
-        await api.put(`/users/${this.form.id}/`, this.form);
-      } else {
-        await api.post("/users/", this.form);
-      }
+      this.saving = true;
+      try {
+        const payload = {
+          name: this.form.name,
+          email: this.form.email,
+          password: this.form.password,
+        };
 
-      this.resetForm();
-      this.loadUsers();
+        if (this.form.id) {
+          await api.put(`/users/${this.form.id}`, payload);
+          this.showToast("Usuário atualizado com sucesso");
+        } else {
+          await api.post("/users/", payload);
+          this.showToast("Usuário criado com sucesso");
+        }
+
+        this.resetForm();
+        this.loadUsers();
+      } catch (error) {
+        this.showToast(
+          error.response?.data?.error || "Erro ao salvar usuário",
+          "error"
+        );
+      } finally {
+        this.saving = false;
+      }
     },
 
     editUser(user) {
-      this.form = { ...user, password: "" };
+      this.form = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        password: "",
+      };
     },
 
     async deleteUser(id) {
-      await api.delete(`/users/${id}`);
-      this.loadUsers();
+      try {
+        await api.delete(`/users/${id}`);
+        this.showToast("Usuário removido com sucesso");
+        this.loadUsers();
+      } catch (error) {
+        this.showToast("Erro ao deletar usuário", "error");
+      }
     },
 
     resetForm() {
@@ -82,17 +149,3 @@ export default {
   },
 };
 </script>
-
-<style>
-.container {
-  max-width: 600px;
-  margin: auto;
-  font-family: Arial;
-}
-input {
-  margin: 5px;
-}
-button {
-  margin-left: 5px;
-}
-</style>
