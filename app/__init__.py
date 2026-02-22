@@ -8,8 +8,12 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    app.url_map.strict_slashes = False
+
     Base.metadata.create_all(bind=engine)
 
-    app.register_blueprint(user_bp)
+    from app.routes.user_routes import user_bp
+
+    app.register_blueprint(user_bp, url_prefix="/api/users")
 
     return app

@@ -1,6 +1,3 @@
-CREATE DATABASE IF NOT EXISTS bd_testes;
-USE bd_testes;
-
 CREATE TABLE user (
   id INT NOT NULL AUTO_INCREMENT,
   public_id VARCHAR(45) NOT NULL,

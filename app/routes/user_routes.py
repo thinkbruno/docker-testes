@@ -3,7 +3,7 @@ from marshmallow import ValidationError
 from app.services.user_service import UserService
 from app.schemas.user_schema import UserCreateSchema, UserUpdateSchema
 
-user_bp = Blueprint("users", __name__, url_prefix="/users")
+user_bp = Blueprint("users", __name__)
 
 service = UserService()
 create_schema = UserCreateSchema()
